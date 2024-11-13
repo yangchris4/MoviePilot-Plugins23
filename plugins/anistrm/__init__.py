@@ -52,13 +52,13 @@ def retry(ExceptionToCheck: Any,
 
 class ANiStrm(_PluginBase):
     # 插件名称
-    plugin_name = "ANiStrm"
+    plugin_name = "ANiStrm23"
     # 插件描述
     plugin_desc = "自动获取当季所有番剧，免去下载，轻松拥有一个番剧媒体库"
     # 插件图标
     plugin_icon = "https://raw.githubusercontent.com/honue/MoviePilot-Plugins/main/icons/anistrm.png"
     # 插件版本
-    plugin_version = "2.4.1"
+    plugin_version = "6.4.1"
     # 插件作者
     plugin_author = "honue"
     # 作者主页
@@ -163,7 +163,7 @@ class ANiStrm(_PluginBase):
 
     def __touch_strm_file(self, file_name, file_url: str = None) -> bool:
         if not file_url:
-            src_url = f'https://openani.an-i.workers.dev/{self._date}/{file_name}?d=true'
+            src_url = f'https://ani.v300.eu.org/{self._date}/{file_name}?d=true'
         else:
             src_url = file_url
         file_path = f'{self._storageplace}/{file_name}.strm'
