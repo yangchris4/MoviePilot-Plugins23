@@ -72,11 +72,11 @@ class ANiStrm(_PluginBase):
 
     # 私有属性
     _enabled = False
-    # 任务执行间隔
     _cron = None
     _onlyonce = False
     _fulladd = False
     _storageplace = None
+    _strm_url = None  # 自定义的 strm 地址
 
     # 定时器
     _scheduler: Optional[BackgroundScheduler] = None
@@ -91,7 +91,8 @@ class ANiStrm(_PluginBase):
             self._onlyonce = config.get("onlyonce")
             self._fulladd = config.get("fulladd")
             self._storageplace = config.get("storageplace")
-            # 加载模块
+            self._strm_url = config.get("strm_url", "https://openani.an-i.workers.dev")  # 默认值
+        # 加载模块
         if self._enabled or self._onlyonce:
             # 定时服务
             self._scheduler = BackgroundScheduler(timezone=settings.TZ)
@@ -162,17 +163,25 @@ class ANiStrm(_PluginBase):
         return ret_array
 
     def __touch_strm_file(self, file_name, file_url: str = None) -> bool:
-        if not file_url:
-            src_url = f'https://ani.v300.eu.org/{self._date}/{file_name}?d=true'
+        # 使用自定义的 strm 地址
+        strm_url = self._storageplace
+        if self._strm_url:  # 如果用户填写了自定义地址
+            strm_url = self._strm_url
+        elif not file_url:
+            # 如果没有自定义地址，使用默认地址
+            strm_url = f'https://openani.an-i.workers.dev/{self._date}/{file_name}?d=true'
         else:
-            src_url = file_url
+            strm_url = file_url
+        
         file_path = f'{self._storageplace}/{file_name}.strm'
+        
         if os.path.exists(file_path):
             logger.debug(f'{file_name}.strm 文件已存在')
             return False
+
         try:
             with open(file_path, 'w') as file:
-                file.write(src_url)
+                file.write(strm_url)
                 logger.debug(f'创建 {file_name}.strm 文件成功')
                 return True
         except Exception as e:
@@ -304,6 +313,23 @@ class ANiStrm(_PluginBase):
                                         }
                                     }
                                 ]
+                            },
+                            {
+                                'component': 'VCol',
+                                'props': {
+                                    'cols': 12,
+                                    'md': 4
+                                },
+                                'content': [
+                                    {
+                                        'component': 'VTextField',
+                                        'props': {
+                                            'model': 'strm_url',
+                                            'label': '自定义Strm地址',
+                                            'placeholder': 'https://example.com/strm'
+                                        }
+                                    }
+                                ]
                             }
                         ]
                     },
@@ -348,36 +374,7 @@ class ANiStrm(_PluginBase):
             "onlyonce": False,
             "fulladd": False,
             "storageplace": '/downloads/strm',
+            "strm_url": 'https://openani.an-i.workers.dev',  # 默认值
             "cron": "*/20 22,23,0,1 * * *",
         }
 
-    def __update_config(self):
-        self.update_config({
-            "onlyonce": self._onlyonce,
-            "cron": self._cron,
-            "enabled": self._enabled,
-            "fulladd": self._fulladd,
-            "storageplace": self._storageplace,
-        })
-
-    def get_page(self) -> List[dict]:
-        pass
-
-    def stop_service(self):
-        """
-        退出插件
-        """
-        try:
-            if self._scheduler:
-                self._scheduler.remove_all_jobs()
-                if self._scheduler.running:
-                    self._scheduler.shutdown()
-                self._scheduler = None
-        except Exception as e:
-            logger.error("退出插件失败：%s" % str(e))
-
-
-if __name__ == "__main__":
-    anistrm = ANiStrm()
-    name_list = anistrm.get_latest_list()
-    print(name_list)
