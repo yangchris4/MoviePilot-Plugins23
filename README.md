@@ -1,7 +1,7 @@
 ### MoviePilot-Plugins 本仓库地址
 
 ```
-https://github.com/honue/MoviePilot-Plugins/
+https://github.com/honue23/MoviePilot-Plugins/
 ```
 
 - [ANi-Strm插件](./docs/anistrm.md)
